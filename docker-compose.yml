@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+# ********************     MY SQL    *************************************
+  database: 
+    # imagen para el contenedor
+    image: mysql:8.0.33
+
+    # nombre del contenedor
+    container_name: mysqldb
+
+    # variables de entorno
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: personas
+
+    # mapeo de puertos
+    ports:
+      - 3306:3306
+ 
+    volumes:
+      - ./dbdata/mysql:/var/lib/mysql
+
+  #************************    MONGODB    *************************************
+  mongo:
+    image: mongo:6.0
+    #restart: always
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./datadb:/data/db
+    
+  #********************   SERVIDOR  **********************************
+  servidor:
+    # nombre contenedor
+    container_name: servidor-parcial
+    # imagen a utilizar
+    build:
+      # carpeta donde se encuentra el codigo
+      context: ./server
+
+      # ubica el dockerfile
+      dockerfile: Dockerfile
+
+    # variables de entorno
+    environment:
+      PORT: 3000
+      DATABASE_HOST: database
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root1
+      DATABASE_NAME: judicial
+      MONGO_DB_URI: mongodb://mongo:27017/test
+
+    # si falla intenta reiniciarse
+    restart: always
+
+    # dependencias del contenedor
+    depends_on:
+      - mongo
+      - database
+
+    # mapeo de puertos
+    ports:
+      - 3000:3000
+
+    volumes:
+      - ./server:/server
